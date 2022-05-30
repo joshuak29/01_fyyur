@@ -254,49 +254,42 @@ def create_venue_submission():
   # TODO: modify data to be the data object returned from db insertion
   
 	form = VenueForm()
-	if form.validate_on_submit():
-  
-  
-		name=form.name.data, 
-		city=form.city.data, 
-		state=form.state.data, 
-		address=form.address.data, 
-		phone=form.phone.data,
-		genres=form.genres.data,  
-		image_link=form.image_link.data,  
-		facebook_link=form.facebook_link.data, 
-		website_link=form.website_link.data, 
-		looking_for_talent=form.seeking_talent.data, 
-		description=form.seeking_description.data
-		
+	try: 
 		venue1 = Venue(
-			name=name, 
-			city=city, 
-			state=state, 
-			address=address, 
-			phone=phone, 
-			genres=genres, 
-			image_link=image_link, 
-			facebook_link=facebook_link, 
-			website_link=website_link, 
-			looking_for_talent=looking_for_talent, 
-			description=description
+			name=form.name.data, 
+			city=form.city.data, 
+			state=form.state.data, 
+			address=form.address.data, 
+			phone=form.phone.data,
+			genres=form.genres.data,  
+			image_link=form.image_link.data,  
+			facebook_link=form.facebook_link.data, 
+			website_link=form.website_link.data, 
+			looking_for_talent=form.seeking_talent.data, 
+			description=form.seeking_description.data
 			)
-		db.session.insert(venue1)
-		# on successful db insert, flash success
+		db.session.add(venue1)
+		db.session.commit()
+			# on successful db insert, flash success
 		flash('Venue ' + request.form['name'] + ' was successfully listed!')
+	except Exception as e:
+		print(e)
+		db.session.rollback()
 		# TODO: on unsuccessful db insert, flash an error instead.
-	else:
+		  # e.g., flash('An error occurred. Venue ' + data.name + ' could not be listed.')
+			# see: http://flask.pocoo.org/docs/1.0/patterns/flashing/
 		flash('An error occurred. Venue ' + request.form['name'] + ' could not be listed.')
+		
     
-  # e.g., flash('An error occurred. Venue ' + data.name + ' could not be listed.')
-  # see: http://flask.pocoo.org/docs/1.0/patterns/flashing/
+
 	return render_template('pages/home.html')
 
 @app.route('/venues/<venue_id>', methods=['DELETE'])
 def delete_venue(venue_id):
   # TODO: Complete this endpoint for taking a venue_id, and using
   # SQLAlchemy ORM to delete a record. Handle cases where the session commit could fail.
+  venue = Venue.query.get(pk=venue_id)
+  venue.delete()
 
   # BONUS CHALLENGE: Implement a button to delete a Venue on a Venue Page, have it so that
   # clicking that button delete it from the db then redirect the user to the homepage
@@ -479,12 +472,38 @@ def create_artist_submission():
   # called upon submitting the new artist listing form
   # TODO: insert form data as a new Venue record in the db, instead
   # TODO: modify data to be the data object returned from db insertion
+	form = ArtistForm()
+	try:
+		artist1 = Artist(
+			name=form.name.data, 
+			city=form.city.data, 
+			state=form.state.data, 
+			phone=form.phone.data,
+			genres=form.genres.data,  
+			image_link=form.image_link.data,  
+			facebook_link=form.facebook_link.data, 
+			website_link=form.website_link.data, 
+			looking_for_venues=form.seeking_venue.data, 
+			description=form.seeking_description.data
+		)
+		db.session.add(artist1)
+		db.session.commit()
+		# on successful db insert, flash success
+		flash('Artist ' + request.form['name'] + ' was successfully listed!')
+	except Exception:
+		db.session.rollback()
+		# TODO: on unsuccessful db insert, flash an error instead.
+		flash('An error occurred. Artist ' + request.form['name'] + ' could not be listed.')
+	finally:
+		return render_template('pages/home.html')
+		
+		
+  
 
-  # on successful db insert, flash success
-  flash('Artist ' + request.form['name'] + ' was successfully listed!')
-  # TODO: on unsuccessful db insert, flash an error instead.
+  
+  
   # e.g., flash('An error occurred. Artist ' + data.name + ' could not be listed.')
-  return render_template('pages/home.html')
+	
 
 
 #  Shows
