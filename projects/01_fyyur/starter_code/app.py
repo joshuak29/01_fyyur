@@ -38,12 +38,12 @@ class Venue(db.Model):
 	name = db.Column(db.String, nullable=False)
 	city = db.Column(db.String(120), nullable=False)
 	state = db.Column(db.String(120), nullable=False)
-	address = db.Column(db.String(120))
-	phone = db.Column(db.String(120), nullable=False)
+	address = db.Column(db.String(120), nullable=False)
+	phone = db.Column(db.String(120))
 	genres = db.Column(db.String(120), nullable=False)
 	image_link = db.Column(db.String(500))
-	facebook_link = db.Column(db.String(120), nullable=False)
-	looking_for_talent = db.Column(db.Boolean, nullable=False, default=False)
+	facebook_link = db.Column(db.String(120))
+	looking_for_talent = db.Column(db.Boolean)
 	description = db.Column(db.Text)
 	shows = db.relationship('Show', backref='venue', lazy='select')
 	website_link = db.Column(db.String(200))
@@ -63,12 +63,12 @@ class Artist(db.Model):
 	name = db.Column(db.String(100), nullable=False)
 	city = db.Column(db.String(120), nullable=False)
 	state = db.Column(db.String(120), nullable=False)
-	phone = db.Column(db.String(120), nullable=False)
+	phone = db.Column(db.String(120))
 	genres = db.Column(db.String(120), nullable=False)
 	image_link = db.Column(db.String(500))
-	facebook_link = db.Column(db.String(120), nullable=False)
+	facebook_link = db.Column(db.String(120))
 	website_link = db.Column(db.String(200))
-	looking_for_venues = db.Column(db.Boolean, nullable=False, default=False)
+	looking_for_venues = db.Column(db.Boolean)
 	description = db.Column(db.Text)
 	shows = db.relationship('Show', backref='artist', lazy='select')
 	
@@ -82,9 +82,9 @@ class Artist(db.Model):
 class Show(db.Model):
 	__tablename__ = 'show'
 	id = db.Column(db.Integer, primary_key=True)
-	name = db.Column(db.String(), nullable=False)
-	artist_id = db.Column(db.Integer, db.ForeignKey('artist.id'))
-	venue_id = db.Column(db.Integer, db.ForeignKey('venue.id'))
+	artist_id = db.Column(db.Integer, db.ForeignKey('artist.id'), nullable=False)
+	venue_id = db.Column(db.Integer, db.ForeignKey('venue.id'), nullable=False)
+	start_time = db.Column(db.DateTime, nullable=False)
 	
 	def __repr__(self):
 		return f"<name: {self.name}, artist:{self.artist_id}, venue: {self.veeu}>"
@@ -252,13 +252,46 @@ def create_venue_form():
 def create_venue_submission():
   # TODO: insert form data as a new Venue record in the db, instead
   # TODO: modify data to be the data object returned from db insertion
-
-  # on successful db insert, flash success
-  flash('Venue ' + request.form['name'] + ' was successfully listed!')
-  # TODO: on unsuccessful db insert, flash an error instead.
+  
+	form = VenueForm()
+	if form.validate_on_submit():
+  
+  
+		name=form.name.data, 
+		city=form.city.data, 
+		state=form.state.data, 
+		address=form.address.data, 
+		phone=form.phone.data,
+		genres=form.genres.data,  
+		image_link=form.image_link.data,  
+		facebook_link=form.facebook_link.data, 
+		website_link=form.website_link.data, 
+		looking_for_talent=form.seeking_talent.data, 
+		description=form.seeking_description.data
+		
+		venue1 = Venue(
+			name=name, 
+			city=city, 
+			state=state, 
+			address=address, 
+			phone=phone, 
+			genres=genres, 
+			image_link=image_link, 
+			facebook_link=facebook_link, 
+			website_link=website_link, 
+			looking_for_talent=looking_for_talent, 
+			description=description
+			)
+		db.session.insert(venue1)
+		# on successful db insert, flash success
+		flash('Venue ' + request.form['name'] + ' was successfully listed!')
+		# TODO: on unsuccessful db insert, flash an error instead.
+	else:
+		flash('An error occurred. Venue ' + request.form['name'] + ' could not be listed.')
+    
   # e.g., flash('An error occurred. Venue ' + data.name + ' could not be listed.')
   # see: http://flask.pocoo.org/docs/1.0/patterns/flashing/
-  return render_template('pages/home.html')
+	return render_template('pages/home.html')
 
 @app.route('/venues/<venue_id>', methods=['DELETE'])
 def delete_venue(venue_id):
