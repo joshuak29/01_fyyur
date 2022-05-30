@@ -20,6 +20,7 @@ from flask_migrate import Migrate
 app = Flask(__name__)
 moment = Moment(app)
 app.config.from_object('config')
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
 
 migrate = Migrate(app, db)
@@ -31,51 +32,62 @@ migrate = Migrate(app, db)
 #----------------------------------------------------------------------------#
 
 class Venue(db.Model):
-	__tablename__ = 'Venue'
+	__tablename__ = 'venue'
 	
 	id = db.Column(db.Integer, primary_key=True)
-	name = db.Column(db.String)
-	city = db.Column(db.String(120))
-	state = db.Column(db.String(120))
+	name = db.Column(db.String, nullable=False)
+	city = db.Column(db.String(120), nullable=False)
+	state = db.Column(db.String(120), nullable=False)
 	address = db.Column(db.String(120))
-	phone = db.Column(db.String(120))
-	genres = db.Column(db.String(120))
+	phone = db.Column(db.String(120), nullable=False)
+	genres = db.Column(db.String(120), nullable=False)
 	image_link = db.Column(db.String(500))
-	facebook_link = db.Column(db.String(120))
+	facebook_link = db.Column(db.String(120), nullable=False)
 	looking_for_talent = db.Column(db.Boolean, nullable=False, default=False)
 	description = db.Column(db.Text)
 	shows = db.relationship('Show', backref='venue', lazy='select')
 	website_link = db.Column(db.String(200))
+	
+	def __repr__(self):
+		return f"<name: {self.name}, address: {self.address}>"
     
 	
 
-    # TODO: implement any missing fields, as a database migration using Flask-Migrate
+    
+# TODO: implement any missing fields, as a database migration using Flask-Migrate
 
 class Artist(db.Model):
-	__tablename__ = 'Artist'
+	__tablename__ = 'artist'
 	
 	id = db.Column(db.Integer, primary_key=True)
-	name = db.Column(db.String)
-	city = db.Column(db.String(120))
-	state = db.Column(db.String(120))
-	phone = db.Column(db.String(120))
-	genres = db.Column(db.String(120))
+	name = db.Column(db.String(100), nullable=False)
+	city = db.Column(db.String(120), nullable=False)
+	state = db.Column(db.String(120), nullable=False)
+	phone = db.Column(db.String(120), nullable=False)
+	genres = db.Column(db.String(120), nullable=False)
 	image_link = db.Column(db.String(500))
-	facebook_link = db.Column(db.String(120))
+	facebook_link = db.Column(db.String(120), nullable=False)
 	website_link = db.Column(db.String(200))
 	looking_for_venues = db.Column(db.Boolean, nullable=False, default=False)
 	description = db.Column(db.Text)
 	shows = db.relationship('Show', backref='artist', lazy='select')
+	
+	def __repr__(self):
+		return f"<name: {self.name}, phone: {self.phone}>"
 	
 
     # TODO: implement any missing fields, as a database migration using Flask-Migrate
 
 # TODO Implement Show and Artist models, and complete all model relationships and properties, as a database migration.
 class Show(db.Model):
-	__tablename__ = 'Show'
-	name = db.Column(db.String(), primary_key=True)
+	__tablename__ = 'show'
+	id = db.Column(db.Integer, primary_key=True)
+	name = db.Column(db.String(), nullable=False)
 	artist_id = db.Column(db.Integer, db.ForeignKey('artist.id'))
 	venue_id = db.Column(db.Integer, db.ForeignKey('venue.id'))
+	
+	def __repr__(self):
+		return f"<name: {self.name}, artist:{self.artist_id}, venue: {self.veeu}>"
 #----------------------------------------------------------------------------#
 # Filters.
 #----------------------------------------------------------------------------#
@@ -530,7 +542,7 @@ if not app.debug:
 
 # Default port:
 if __name__ == '__main__':
-    app.run()
+	app.run()
 
 # Or specify port manually:
 '''
