@@ -120,6 +120,15 @@ def venues():
   #       num_upcoming_shows should be aggregated based on number of upcoming shows per venue.
   
   venues = Venue.query.all()
+  areas = db.session.query(Venue.city, Venue.state).group_by(Venue.city, Venue.state).all()
+  data = []
+  for city, state in areas:
+	  datas = {
+		  "state": state,
+		  "city": city,
+		  "venues": [venue for venue in Venue.query.filter_by(state=state).filter_by(city=city).all()]}
+	  data.append(datas)
+  
   # for venue in venues:
     # data = [{}
     # "city": venue.city,
@@ -139,27 +148,27 @@ def venues():
 	# ]
     
 	
-  data=[{
-    "city": "San Francisco",
-    "state": "CA",
-    "venues": [{
-      "id": 1,
-      "name": "The Musical Hop",
-      "num_upcoming_shows": 0,
-    }, {
-      "id": 3,
-      "name": "Park Square Live Music & Coffee",
-      "num_upcoming_shows": 1,
-    }]
-  }, {
-    "city": "New York",
-    "state": "NY",
-    "venues": [{
-      "id": 2,
-      "name": "The Dueling Pianos Bar",
-      "num_upcoming_shows": 0,
-    }]
-  }]
+  # data=[{
+    # "city": "San Francisco",
+    # "state": "CA",
+    # "venues": [{
+      # "id": 1,
+      # "name": "The Musical Hop",
+      # "num_upcoming_shows": 0,
+    # }, {
+      # "id": 3,
+      # "name": "Park Square Live Music & Coffee",
+      # "num_upcoming_shows": 1,
+    # }]
+  # }, {
+    # "city": "New York",
+    # "state": "NY",
+    # "venues": [{
+      # "id": 2,
+      # "name": "The Dueling Pianos Bar",
+      # "num_upcoming_shows": 0,
+    # }]
+  # }]
   return render_template('pages/venues.html', areas=data);
 
 @app.route('/venues/search', methods=['POST'])
@@ -181,46 +190,28 @@ def search_venues():
 def show_venue(venue_id):
   # shows the venue page with the given venue_id
   # TODO: replace with real venue data from the venues table, using venue_id
-  data = Venue.query.get(venue_id)
-  # data = {
-    # "id": venue.id,
-    # "name": venue.name,
-    # "genres": venue.genres,
-    # "address": venue.address,
-    # "city": venue.city,
-    # "state": venue.state,
-    # "phone": venue.phone,
-    # "website": venue.website_link,
-    # "facebook_link": venue.facebook_link,
-    # "seeking_talent": venue.looking_for_talent,
-    # "seeking_description": venue.description,
-    # "image_link": venue.image_link}
-  
-  
+  venue = Venue.query.get(venue_id)
+  past_shows = Show.query.filter(Show.start_time < datetime.now()).filter(Show.venue_id == venue_id).all()
+  upcoming_shows = Show.query.filter(Show.start_time > datetime.now()).filter(Show.venue_id == venue_id).all()
     
-  # data1={
-    # "id": 1,
-    # "name": "The Musical Hop",
-    # "genres": ["Jazz", "Reggae", "Swing", "Classical", "Folk"],
-    # "address": "1015 Folsom Street",
-    # "city": "San Francisco",
-    # "state": "CA",
-    # "phone": "123-123-1234",
-    # "website": "https://www.themusicalhop.com",
-    # "facebook_link": "https://www.facebook.com/TheMusicalHop",
-    # "seeking_talent": True,
-    # "seeking_description": "We are on the lookout for a local artist to play every two weeks. Please call us.",
-    # "image_link": "https://images.unsplash.com/photo-1543900694-133f37abaaa5?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=400&q=60",
-    # "past_shows": [{
-      # "artist_id": 4,
-      # "artist_name": "Guns N Petals",
-      # "artist_image_link": "https://images.unsplash.com/photo-1549213783-8284d0336c4f?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=300&q=80",
-      # "start_time": "2019-05-21T21:30:00.000Z"
-    # }],
-    # "upcoming_shows": [],
-    # "past_shows_count": 1,
-    # "upcoming_shows_count": 0,
-  # }
+  data={
+    "id": venue.id,
+	"name": venue.name,
+	"genres": venue.genres,
+	"address": venue.address,
+	"city": venue.city,
+	"state": venue.state,
+	"phone": venue.phone,
+	"website": venue.website_link,
+    
+	
+	"facebook_link": venue.facebook_link,"seeking_talent": venue.looking_for_talent,"seeking_description": venue.description,
+	"image_link": venue.image_link,
+	"past_shows": past_shows,
+	"upcoming_shows": upcoming_shows,
+	"past_shows_count": len(past_shows),
+	"upcoming_shows_count": len(upcoming_shows),
+  }
   # data2={
     # "id": 2,
     # "name": "The Dueling Pianos Bar",
@@ -472,7 +463,7 @@ def edit_venue(venue_id):
   form.genres.data = venue.genres
   form.website_link.data = venue.website_link
   form.facebook_link.data = venue.facebook_link
-  form.seeking_talent.data = venue.looking_for_artist
+  form.seeking_talent.data = venue.looking_for_talent
   form.seeking_description.data = venue.description
   form.image_link.data = venue.image_link
   
@@ -494,9 +485,10 @@ def edit_venue_submission(venue_id):
 		venue.address = form.address.data
 		venue.website_link = form.website_link.data
 		venue.facebook_link = form.facebook_link.data
-		artist.looking_for_artist = form.seeking_talent.data
-		artist.description = form.seeking_description.data
-		artist.image_link = form.image_link.data
+		venue.looking_for_talent = form.seeking_talent.data
+		venue.description = form.seeking_description.data
+		venue.image_link = form.image_link.data
+		db.session.commit()
 
 		flash('Changes have been saved successfully')
 	except Exception as e:
@@ -504,7 +496,7 @@ def edit_venue_submission(venue_id):
 		db.session.rollback()
 		flash('An error occurred changes were not saved successfully')
 			
-		db.session.commit()
+		
 	return redirect(url_for('show_venue', venue_id=venue_id))
 
 #  Create Artist
