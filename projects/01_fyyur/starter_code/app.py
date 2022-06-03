@@ -45,7 +45,7 @@ class Venue(db.Model):
 	facebook_link = db.Column(db.String(120))
 	looking_for_talent = db.Column(db.Boolean)
 	description = db.Column(db.Text)
-	shows = db.relationship('Show', backref='venue', lazy='select')
+	shows = db.relationship('Show', backref='venue', lazy='select', cascade='all, delete-orphan')
 	website_link = db.Column(db.String(200))
 	
 	def __repr__(self):
@@ -202,6 +202,7 @@ def create_venue_submission():
 			description=form.seeking_description.data
 			)
 		db.session.add(venue1)
+		db.session.commit()
 		
 			# on successful db insert, flash success
 		flash('Venue ' + request.form['name'] + ' was successfully listed!')
@@ -212,21 +213,31 @@ def create_venue_submission():
 		  # e.g., flash('An error occurred. Venue ' + data.name + ' could not be listed.')
 			# see: http://flask.pocoo.org/docs/1.0/patterns/flashing/
 		flash('An error occurred. Venue ' + request.form['name'] + ' could not be listed.')
+	db.session.close()
 		
     
-	db.session.commit()
+	
 	return render_template('pages/home.html')
 
-@app.route('/venues/<venue_id>', methods=['DELETE'])#MYTODO
+@app.route('/venues/<venue_id>/delete')#MYTODO
 def delete_venue(venue_id):
   # TODO: Complete this endpoint for taking a venue_id, and using
   # SQLAlchemy ORM to delete a record. Handle cases where the session commit could fail.
-  venue = Venue.query.get(pk=venue_id)
-  venue.delete()
+	venue = Venue.query.get(venue_id)
+	venue_name = venue.name
+	try:
+		db.session.delete(venue)
+		db.session.commit()
+		flash(f"Venue {venue_name} has been succesfully deleted.")
+	except Exception as e:
+		print(e)
+		db.session.rollback()
+		flash(f"An error has been encountered. Failed to delete {venue_name} from venues.")
+	db.session.close()
 
   # BONUS CHALLENGE: Implement a button to delete a Venue on a Venue Page, have it so that
   # clicking that button delete it from the db then redirect the user to the homepage
-  return None
+	return redirect(url_for('venues'))
 
 #  Artists
 #  ----------------------------------------------------------------
@@ -325,6 +336,7 @@ def edit_artist_submission(artist_id):
 		print(e)
 		db.session.rollback()
 		flash('An erro occurred changes were not saved successfully')
+	db.sesssion.close()
 		
 	
 	return redirect(url_for('show_artist', artist_id=artist_id))
@@ -374,6 +386,7 @@ def edit_venue_submission(venue_id):
 		print(e)
 		db.session.rollback()
 		flash('An error occurred changes were not saved successfully')
+	db.session.close()
 			
 		
 	return redirect(url_for('show_venue', venue_id=venue_id))
@@ -414,7 +427,7 @@ def create_artist_submission():
 		# TODO: on unsuccessful db insert, flash an error instead.
 		flash('An error occurred. Artist ' + request.form['name'] + ' could not be listed.')
 	finally:
-		
+		db.session.close()
 		return render_template('pages/home.html')
 		
 		
@@ -477,7 +490,7 @@ def create_show_submission():
   # see: http://flask.pocoo.org/docs/1.0/patterns/flashing/
 		db.session.rollback()
 		flash('An error occurred. Show could not be listed')
-	
+	db.session.close()
 	return render_template('pages/home.html')
     
 
