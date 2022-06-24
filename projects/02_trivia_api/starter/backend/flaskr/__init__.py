@@ -66,12 +66,8 @@ def create_app(test_config=None):
   
   
 
-  '''
-  @TODO: 
-  Create an endpoint to handle GET requests 
-  for all available categories.
-  '''
-  @app.route('/categories')     # endpoint that returns all the categories throug GET reqquests 
+ # endpoint that returns all the categories throug GET reqquests 
+  @app.route('/categories')     
   def get_categories():
     category = Category.query.all()
     
@@ -90,21 +86,11 @@ def create_app(test_config=None):
         
       
       
+#This endpoint returns a list of questions, number of total questions, current category, categories. 
+# Throug a GET request with page argument to indicate the page
+# Returning a 400 error when the page is out of range
 
-
-  '''
-  @TODO: 
-  Create an endpoint to handle GET requests for questions, 
-  including pagination (every 10 questions). 
-  This endpoint should return a list of questions, 
-  number of total questions, current category, categories. 
-
-  TEST: At this point, when you start the application
-  you should see questions and categories generated,
-  ten questions per page and pagination at the bottom of the screen for three pages.
-  Clicking on the page numbers should update the questions. 
-  '''
-  @app.route('/questions')      #This endpoint returns a list of questions, number of total questions, current category, categories. Throug a get request with page argument to indicate the page
+  @app.route('/questions')      
   def get_questions():
     questions = Question.query.order_by(Question.id).all()
     categories = Category.query.order_by(Category.id).all()
@@ -123,13 +109,10 @@ def create_app(test_config=None):
     except:
       abort(400)        
 
-  '''
-  @TODO: 
-  Create an endpoint to DELETE question using a question ID. 
 
-  TEST: When you click the trash icon next to a question, the question will be removed.
-  This removal will persist in the database and when you refresh the page. 
-  '''
+  
+  
+  # This endpoint sends a DELETE request to delette a question using a question ID. 
   @app.route('/questions/<int:query_id>', methods=['DELETE'])
   def delete_question(query_id):
     query = Question.query.filter(Question.id == query_id).one_or_none()
@@ -145,16 +128,13 @@ def create_app(test_config=None):
     except:
       abort(404)
 
-  '''
-  @TODO: 
-  Create an endpoint to POST a new question, 
-  which will require the question and answer text, 
-  category, and difficulty score.
-
-  TEST: When you submit a question on the "Add" tab, 
-  the form will clear and the question will appear at the end of the last page
-  of the questions list in the "List" tab.  
-  '''
+ 
+  # This endpoint  accepts a POST request with arguments  question, answer, category, and difficulty to create a new question.
+  
+  # If their is a searchTerm argument in the request it responses with all the question records that match 
+  # The searchTerm with a case insensitive query
+  
+  # If non of the above arguments is found it returns a 400 error
   @app.route('/questions', methods=['POST'])
   def add_question():
     
@@ -186,27 +166,9 @@ def create_app(test_config=None):
       print(e)
       abort(400)
    
-      
 
-  '''
-  @TODO: 
-  Create a POST endpoint to get questions based on a search term. 
-  It should return any questions for whom the search term 
-  is a substring of the question. 
 
-  TEST: Search by any phrase. The questions list will update to include 
-  only question that include that string within their question. 
-  Try using the word "title" to start. 
-  '''
-
-  '''
-  @TODO: 
-  Create a GET endpoint to get questions based on category. 
-
-  TEST: In the "List" tab / main screen, clicking on one of the 
-  categories in the left column will cause only questions of that 
-  category to be shown. 
-  '''
+  # This enpoint Create a GET request to get questions based on category. 
   @app.route('/categories/<int:category_id>/questions')
   def get_query_by_category(category_id):
     
@@ -225,17 +187,12 @@ def create_app(test_config=None):
     
 
 
-  '''
-  @TODO: 
-  Create a POST endpoint to get questions to play the quiz. 
-  This endpoint should take category and previous question parameters 
-  and return a random questions within the given category, 
-  if provided, and that is not one of the previous questions. 
 
-  TEST: In the "Play" tab, after a user selects "All" or a category,
-  one question at a time is displayed, the user is allowed to answer
-  and shown whether they were correct or not. 
-  '''
+
+  # This endpoint Creates a POST to get questions to play the quiz.
+  # It takes category and previous question parameters and return a random question within the given category, 
+  #if provided, and that is not one of the previous questions. 
+  
   @app.route('/quizzes', methods=(['POST']))
   def post_next_question():
     try:
@@ -264,12 +221,7 @@ def create_app(test_config=None):
       
       
   
-
-  '''
-  @TODO: 
-  Create error handlers for all expected errors 
-  including 404 and 422. 
-  '''
+#Below are the error handlers for different errors a user might encounter
   @app.errorhandler(404)
   def not_found(error):
     return (
