@@ -57,14 +57,14 @@ class TriviaTestCase(unittest.TestCase):
         self.assertEqual(body['message'], 'bad request')
         
     def test_delete_question(self):
-        res = self.client().delete('/questions/32')
+        res = self.client().delete('/questions/44')
         body = json.loads(res.data) 
         
         self.assertEqual(res.status_code, 200)
-        self.assertEqual(body['deleted'], 12)
+        self.assertEqual(body['deleted'], 44)
     
     def test_404_fail_delete_invalid_question(self):
-        res = self.client().delete('/questions/100')
+        res = self.client().delete('/questions/1')
         body = json.loads(res.data) 
         
         self.assertEqual(res.status_code, 404)
@@ -83,7 +83,7 @@ class TriviaTestCase(unittest.TestCase):
         self.assertTrue(body['currentCategory'], 'Art')   
     
     def test_failed_get_query_by_category(self):      
-        res = self.client().get('/categories/10/questions')
+        res = self.client().get('/categories/9/questions')
         body = json.loads(res.data)
         
         self.assertEqual(res.status_code, 404)
@@ -108,13 +108,13 @@ class TriviaTestCase(unittest.TestCase):
         res = self.client().post('/questions')
         body = json.loads(res.data)
         
-        self.assertEqual(res.status_code, 405)
-        self.assertEqual(body['error'], 405)
-        self.assertEqual(body['message'], 'method not allowed')
+        self.assertEqual(res.status_code, 400)
+        self.assertEqual(body['error'], 400)
+        self.assertEqual(body['message'], 'bad request')
         
     
     def test_get_quizzes(self):
-        res = self.client().post('/quizzes', json={'previous_questions': [], 'quiz_category':'Art'})
+        res = self.client().post('/quizzes', json={'previous_questions': 19, 'quiz_category':2})
         body = json.loads(res.data)
         
         self.assertEqual(res.status_code, 200)

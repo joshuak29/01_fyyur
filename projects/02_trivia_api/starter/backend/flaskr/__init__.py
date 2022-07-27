@@ -18,7 +18,7 @@ def paginate(request, resource):
   questions = [question.format() for question in resource]
   return questions[start:end]
 
-#This returns all categories as a dictionary of id: type key: value pairs
+#This returns all categories as a dictionary of id: type, key: value pairs
 def all_categories(category):
   categories_all = [cat.format() for cat in category]
   categories = {}
@@ -28,16 +28,16 @@ def all_categories(category):
   return categories
 
 def quiz(questions, previous):
-  next_questions = []
-  question_ids = [question['category'] for question in questions]
+  valid_questions = []
+  # question_ids = [question['category'] for question in questions]
   
   for i in questions:
     if i['id'] in previous:
-      continue
+      pass
     else:
-      next_questions.append(i)
+      valid_questions.append(i)
   
-  return next_questions
+  return valid_questions
   
     
   
@@ -80,7 +80,8 @@ def create_app(test_config=None):
       return jsonify({
         'categories': all_categories(category)
       })
-    except:
+    except Exception as e:
+      print(e)
       abort(422)                #return 422 unproccessable error if request fails
       
         
@@ -102,11 +103,12 @@ def create_app(test_config=None):
         
       
       return jsonify({
-        'questions': paginate(request, questions),
+        'questions': current_questions,
         'totalQuestions': len(questions),
         'categories': all_categories(categories)
       })
-    except:
+    except Exception as e:
+      print(e)
       abort(400)        
 
 
@@ -125,7 +127,8 @@ def create_app(test_config=None):
       return jsonify({
         'deleted': query_id
       })
-    except:
+    except Exception as e:
+      print(e)
       abort(404)
 
  
@@ -137,22 +140,32 @@ def create_app(test_config=None):
   # If non of the above arguments is found it returns a 400 error
   @app.route('/questions', methods=['POST'])
   def add_question():
+    body = request.get_json()
     
-    new_question = request.args.get("question", None, type=str)
-    new_answer = request.args.get("answer", None, type=str)
-    new_difficulty = request.args.get("difficulty", None, type=str)
-    new_category = request.args.get("category", None, type=int)
-    search_term = request.args.get("searchTerm", None, type=str)
+    new_question = body.get('question', None)
+    new_answer = body.get('answer', None)
+    new_difficulty = body.get('difficulty', None)
+    new_category = body.get('category', None)
+    search_term = body.get('searchTerm', None)
+        
+    #new_question = request.args.get("question", None, type=str)
+    #new_answer = request.args.get("answer", None, type=str)
+    #new_difficulty = request.args.get("difficulty", None, type=str)
+    #new_category = request.args.get("category", None, type=int)
+    #search_term = request.args.get("searchTerm", None, type=str)
     
     try:
       if search_term is None:
-        if new_question or new_answer or new_category or new_difficulty is None:
-          abort(400)
-        else:
+        if new_question and new_answer and new_category and new_difficulty:
           question1 = Question(question=new_question, answer=new_answer, difficulty=new_difficulty, category=new_category)
           
           question1.insert()
-          return search_term
+          return jsonify({
+            'created':question1.id
+          })
+        else:
+          abort(400)
+          
       
       else:
         results = Question.query.filter(Question.question.ilike('%' + search_term + '%')).all()
@@ -182,7 +195,8 @@ def create_app(test_config=None):
         'currentCategory':category['type']
       })
       
-    except:
+    except Exception as e:
+      print(e)
       abort(404)
     
 
@@ -196,10 +210,13 @@ def create_app(test_config=None):
   @app.route('/quizzes', methods=(['POST']))
   def post_next_question():
     try:
-      previous_questions = request.args.get('previous_questions', type=list)
-      category = request.args.get('quiz_category', type=int)
+      body = request.get_json()
       
-      category_id = Category.query.filter(Category.type == category).one_or_none().format()['id']
+      previous = body.get('previous_questions', None)
+      previous_questions = [int(i) for i in previous]
+      category_id = body.get('quiz_category', None)
+      
+      # category_id = Category.query.filter(Category.id == category).one_or_none().format()['id']
       query = Question.query.filter(Question.category == category_id).all()
       
       questions = [question.format() for question in query]
@@ -207,7 +224,7 @@ def create_app(test_config=None):
       valid_questions = quiz(questions, previous_questions)
       question = random.choice(valid_questions)
       
-      return question
+      return jsonify({'question': question})
     except Exception as e:
       print(e) 
       abort(400)
