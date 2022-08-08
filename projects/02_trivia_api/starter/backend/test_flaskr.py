@@ -57,14 +57,14 @@ class TriviaTestCase(unittest.TestCase):
         self.assertEqual(body['message'], 'bad request')
         
     def test_delete_question(self):
-        res = self.client().delete('/questions/44')
+        res = self.client().delete('/questions/9')
         body = json.loads(res.data) 
         
         self.assertEqual(res.status_code, 200)
-        self.assertEqual(body['deleted'], 44)
+        self.assertEqual(body['deleted'], 9)
     
     def test_404_fail_delete_invalid_question(self):
-        res = self.client().delete('/questions/1')
+        res = self.client().delete('/questions/1000')
         body = json.loads(res.data) 
         
         self.assertEqual(res.status_code, 404)
@@ -91,7 +91,7 @@ class TriviaTestCase(unittest.TestCase):
         self.assertEqual(body['message'], 'resource not found')
         
     def test_post_search_questions(self):
-        res = self.client().post('/questions', json={'searchTerm': 'title'})
+        res = self.client().post('/questions', json={'searchTerm': 'e'})
         body = json.loads(res.data)
         
         self.assertEqual(res.status_code, 200)
@@ -114,7 +114,7 @@ class TriviaTestCase(unittest.TestCase):
         
     
     def test_get_quizzes(self):
-        res = self.client().post('/quizzes', json={'previous_questions': 19, 'quiz_category':2})
+        res = self.client().post('/quizzes', json={'previous_questions': [19], 'quiz_category':2})
         body = json.loads(res.data)
         
         self.assertEqual(res.status_code, 200)
