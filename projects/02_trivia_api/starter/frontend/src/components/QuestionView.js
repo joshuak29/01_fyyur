@@ -9,10 +9,10 @@ class QuestionView extends Component {
   constructor(props){
     super(props);
     this.state = {
-      questions: [],
+      questions: null,
       page: 1,
-      totalQuestions: 0,
-      categories: {},
+      totalQuestions: null,
+      categories: null,
       currentCategory: null,
     }
   }
@@ -23,7 +23,7 @@ class QuestionView extends Component {
 
   getQuestions = () => {
     $.ajax({
-      url: `https://localhost:5000/questions?page=${this.state.page}`, //TODO: update request URL
+      url: `http://localhost:5000/questions?page=${this.state.page}`, //TODO: update request URL
       type: "GET",
       success: (result) => {
         this.setState({
@@ -34,7 +34,7 @@ class QuestionView extends Component {
         })
       },
       error: (error) => {
-        alert('Unable to load questions. Please try your request again')
+        alert('Unable to load questions. Please try your request again ' + error)
       }
     })
   }
@@ -59,7 +59,7 @@ class QuestionView extends Component {
 
   getByCategory= (id) => {
     $.ajax({
-      url: `https://localhost:5000/categories/${id}/questions`, //TODO: update request URL
+      url: `http://localhost:5000/categories/${id}/questions`, //TODO: update request URL
       type: "GET",
       success: (result) => {
         this.setState({
@@ -76,7 +76,7 @@ class QuestionView extends Component {
 
   submitSearch = (searchTerm) => {
     $.ajax({
-      url: `https://localhost:5000/questions`, //TODO: update request URL
+      url: `http://localhost:5000/questions`, //TODO: update request URL
       type: "POST",
       dataType: 'json',
       contentType: 'application/json',
@@ -102,7 +102,7 @@ class QuestionView extends Component {
     if(action === 'DELETE') {
       if(window.confirm('are you sure you want to delete the question?')) {
         $.ajax({
-          url: `https://localhost:5000/questions/${id}`, //TODO: update request URL
+          url: `http://localhost:5000/questions/${id}`, //TODO: update request URL
           type: "DELETE",
           success: (result) => {
             this.getQuestions();
